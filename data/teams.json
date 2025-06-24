@@ -1,0 +1,25 @@
+{
+  "Academic": [
+    {"id": 1, "name": "Saka TUDa", "organization": "Technische Universität Darmstadt"},
+    {"id": 2, "name": "UVigo Aerotech: AINE", "organization": "Universidad de Vigo"},
+    {"id": 3, "name": "UCA&AIR", "organization": "Universidad de Cádiz"},
+    {"id": 4, "name": "EOLO", "organization": "Universidad Politecnica de Valencia"},
+    {"id": 5, "name": "Diana", "organization": "Universidad de Castilla la Mancha"},
+    {"id": 6, "name": "ARTEMIS", "organization": "Universidad Politecnica de Valencia"},
+    {"id": 7, "name": "S7EAM", "organization": "Universidad Politecnica de Valencia"},
+    {"id": 8, "name": "Navy Hawks", "organization": "Universidad Politecnica de Valencia"},
+    {"id": 9, "name": "Trencalos", "organization": "ESEIAAT - Universitat Politecnica de Catalunya"},
+    {"id": 10, "name": "Kondor Aero", "organization": "Universidad Politecnica de Valencia"},
+    {"id": 11, "name": "VANTUS #1", "organization": "Universidad de Sevilla"},
+    {"id": 12, "name": "ECLift", "organization": "Ecole Centrale de Lyon"},
+    {"id": 13, "name": "VANTUS #2", "organization": "Universidad de Sevilla"},
+    {"id": 14, "name": "Saeta T1", "organization": "Universidad Carlos III de Madrid"},
+    {"id": 15, "name": "Saeta T2", "organization": "Universidad Carlos III de Madrid"}
+  ],
+  "Clubs": [
+    {"id": 17, "name": "TEAM XALOC GUARDO", "organization": "CLUB AEROMODELISMO XALOC"},
+    {"id": 18, "name": "TEAM ESPIGUETE XALOC", "organization": "CLUB AEROMODELISMO XALOC"},
+    {"id": 19, "name": "SkyDragons", "organization": "Club de aeromodelismo Alzira"},
+    {"id": 20, "name": "Flying Pigs", "organization": "Club de aeromodelismo Alzira"}
+  ]
+}
