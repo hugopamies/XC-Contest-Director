@@ -46,7 +46,13 @@ def compute_round_score(data, category="academic",
     Ppeso = w["payload"] * (Cdes / best_unloaded_payload) * (Cdes / Csol) if Csol > 0 else 0
     Ptiempo = w["circuit"] * (best_circuit_time / Tcircuit) if Tcircuit > 0 else 0
     Pglide = w["glide"] * (Tglide / best_glide_time) if best_glide_time > 0 else 0
-    Paltitud = min(w["altitude"], max(0, A60s - 40))
+
+    if category == "Academic":
+        altitude_score = 4.3636e-6 * (A60s ** 4) - 0.001215 * (A60s ** 3) + 0.095732 * (A60s ** 2) - 0.86741 * A60s
+    elif category == "Clubs":
+        altitude_score = 6.5455e-6 * (A60s ** 4) - 0.001822 * (A60s ** 3) + 0.1436 * (A60s ** 2) - 1.3011 * A60s
+    else:
+        altitude_score = 0
 
     if Tcarga > 0:
         carga_eff = Cdes / math.sqrt(Tcarga)
@@ -62,13 +68,13 @@ def compute_round_score(data, category="academic",
     elif takeoff_distance <= 40:
         Bdespegue = 1.125
 
-    Spiloto = 1.0 if internal_pilot else 0.75
-    Lvuelo = 1.0 if legal_flight else 0.0
-    Laterrizaje = 1.0 if good_landing else 0.5
-    Srepuestos = 0.75 if used_replacement_parts else 1.0
+    Spiloto = 1.0 #if internal_pilot else 0.75
+    Lvuelo = 1.0 #if legal_flight else 0.0
+    Laterrizaje = 1.0 #if good_landing else 0.5
+    Srepuestos = 1.0 #if used_replacement_parts else 1.0
 
     # --- Final Score ---
-    base = Ppeso + Ptiempo + Pglide + Paltitud
+    base = Ppeso + Ptiempo + Pglide + altitude_score
     total = ((base * Lvuelo * Laterrizaje + Bcarga) * Bdespegue) * Spiloto * Srepuestos
 
     return round(total, 2)

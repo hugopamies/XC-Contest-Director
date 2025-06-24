@@ -40,7 +40,7 @@ class RoundDetailsTab(QWidget):
 
     def refresh_data(self):
         # Load teams
-        category = self.category_dropdown.currentText().lower()
+        category = self.category_dropdown.currentText()
         with open("data/teams.json", "r", encoding="utf-8") as f:
             teams_data = json.load(f)
             self.teams = teams_data.get(category, [])
@@ -67,6 +67,7 @@ class RoundDetailsTab(QWidget):
             layout = QVBoxLayout(tab)
             table = QTableWidget()
             layout.addWidget(table)
+            tab.setLayout(layout)
             self.round_tabs.addTab(tab, f"Round {round_index + 1}")
 
             self.populate_table(table, category, round_index)
@@ -107,14 +108,14 @@ class RoundDetailsTab(QWidget):
                 Tcarga = inputs.get("Loading Time", 1)
 
                 weights = {
-                    "academic": {
+                    "Academic": {
                         "payload": 150,
                         "circuit": 150,
                         "glide": 100,
                         "altitude": 100,
                         "loading": 100
                     },
-                    "clubs": {
+                    "Clubs": {
                         "payload": 200,
                         "circuit": 200,
                         "glide": 150,
@@ -123,7 +124,7 @@ class RoundDetailsTab(QWidget):
                     }
                 }
 
-                w = weights.get(category, weights["academic"])
+                w = weights.get(category, weights["Academic"])
 
                 payload_score = (
                     w["payload"] * (Cdes / best_Cdes) * (Cdes / Csol)
@@ -141,7 +142,14 @@ class RoundDetailsTab(QWidget):
                     w["loading"] * ((Cdes / (Tcarga ** 0.5)) / best_eff)
                     if Tcarga > 0 and best_eff > 0 else 0
                 )
-                altitude_score = min(w["altitude"], max(0, A60s - 40))
+                
+                if category == "Academic":
+                    altitude_score = 4.3636e-6 * (A60s ** 4) - 0.001215 * (A60s ** 3) + 0.095732 * (A60s ** 2) - 0.86741 * A60s
+                elif category == "Clubs":
+                    altitude_score = 6.5455e-6 * (A60s ** 4) - 0.001822 * (A60s ** 3) + 0.1436 * (A60s ** 2) - 1.3011 * A60s
+                else:
+                    altitude_score = 0
+                
 
                 total = compute_round_score(
                     inputs, category,
