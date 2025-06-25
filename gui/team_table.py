@@ -1,4 +1,5 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QPushButton, QTabWidget, QFileDialog, QMessageBox
+from PyQt6.QtCore import Qt
 import json
 from utils.storage import load_results
 from scoring.scoring_engine import total_score
@@ -7,6 +8,15 @@ from utils.xlsx_exporter import export_all_data_to_excel
 from scoring.scoring_engine import compute_round_score, get_best_values_per_round
 
 
+class NumericTableWidgetItem(QTableWidgetItem):
+    def __init__(self, text, number):
+        super().__init__(text)
+        self.number = number  # Store the numeric value
+
+    def __lt__(self, other):
+        if isinstance(other, NumericTableWidgetItem):
+            return self.number < other.number
+        return super().__lt__(other)
 
 
 class TeamRankingsTab(QWidget):
@@ -62,9 +72,11 @@ class TeamRankingsTab(QWidget):
             all_scores.append((team, rounds))
             max_rounds = max(max_rounds, len(rounds))
 
-        table.setColumnCount(2 + max_rounds + 1)  # ID, Name, R1...Rn, Total
+        table.setColumnCount(2 + max_rounds + 1)
         headers = ["Team ID", "Team Name"] + [f"R{i+1}" for i in range(max_rounds)] + ["Total Score"]
         table.setHorizontalHeaderLabels(headers)
+        table.setSortingEnabled(True)  # ✅ Enable sorting
+
 
         table.setRowCount(len(all_scores))
 
@@ -95,15 +107,18 @@ class TeamRankingsTab(QWidget):
         
             total = total_score(recalculated_scores)
 
+            item_id = NumericTableWidgetItem(tid, int(tid))
+            table.setItem(row, 0, item_id)
 
-            table.setItem(row, 0, QTableWidgetItem(tid))
             table.setItem(row, 1, QTableWidgetItem(name))
 
             for i, score in enumerate(recalculated_scores):
 
                 table.setItem(row, 2 + i, QTableWidgetItem(str(round(score, 2))))
 
-            table.setItem(row, 2 + max_rounds, QTableWidgetItem(str(round(total, 2))))
+            item_total = NumericTableWidgetItem(str(round(total, 2)), total)
+            table.setItem(row, 2 + max_rounds, item_total)
+
 
         layout.addWidget(QLabel(f"{category.capitalize()} Team Rankings"))
         layout.addWidget(table)
@@ -112,6 +127,8 @@ class TeamRankingsTab(QWidget):
         layout.addWidget(refresh_btn)
 
         widget.setLayout(layout)
+        table.sortItems(2 + max_rounds, Qt.SortOrder.DescendingOrder)
+
         return widget
 
     def export_pdf(self):

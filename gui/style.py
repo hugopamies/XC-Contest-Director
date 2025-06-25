@@ -21,12 +21,12 @@ def get_stylesheet():
         }
 
         QTabBar::tab:selected {
-            background: #4CAF50;
+            background: #A8323E; /* Muted Red */;
             color: white;
         }
 
         QPushButton {
-            background-color: #4CAF50;
+            background-color: #A8323E; /* Muted Red */;
             color: white;
             padding: 8px 16px;
             font-weight: bold;

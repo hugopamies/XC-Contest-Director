@@ -49,8 +49,10 @@ def compute_round_score(data, category="academic",
 
     if category == "Academic":
         altitude_score = 4.3636e-6 * (A60s ** 4) - 0.001215 * (A60s ** 3) + 0.095732 * (A60s ** 2) - 0.86741 * A60s
+        altitude_score = math.ceil(altitude_score * 10) / 10
     elif category == "Clubs":
         altitude_score = 6.5455e-6 * (A60s ** 4) - 0.001822 * (A60s ** 3) + 0.1436 * (A60s ** 2) - 1.3011 * A60s
+        altitude_score = math.ceil(altitude_score * 10) / 10
     else:
         altitude_score = 0
 
@@ -68,26 +70,48 @@ def compute_round_score(data, category="academic",
     elif takeoff_distance <= 40:
         Bdespegue = 1.125
 
-    Spiloto = 1.0 #if internal_pilot else 0.75
-    Lvuelo = 1.0 #if legal_flight else 0.0
-    Laterrizaje = 1.0 #if good_landing else 0.5
-    Srepuestos = 1.0 #if used_replacement_parts else 1.0
+    #Spiloto = 1.0 #if internal_pilot else 0.75
+    #Lvuelo = 1.0 #if legal_flight else 0.0
+    #Laterrizaje = 1.0 #if good_landing else 0.5
+    #Srepuestos = 1.0 #if used_replacement_parts else 1.0
+
+    if internal_pilot == 1.00:
+        Spiloto = 1.0
+    else:
+        Spiloto = 0.75
+
+    if legal_flight == 1.00:
+        Lvuelo = 1.0
+    else:
+        Lvuelo = 0.0    
+
+    if good_landing == 1.00:
+        Laterrizaje = 1.0
+    else:
+        Laterrizaje = 0.5
+
+    if used_replacement_parts == 1.00:
+        Srepuestos = 1.0    
+    else:
+        Srepuestos = 0.75   
+
 
     # --- Final Score ---
     base = Ppeso + Ptiempo + Pglide + altitude_score
     total = ((base * Lvuelo * Laterrizaje + Bcarga) * Bdespegue) * Spiloto * Srepuestos
-
     return round(total, 2)
 
 def total_score(round_scores):
-    """Total score = average of all rounds except the worst one."""
+    """Total score = average of all rounds, excluding the worst only if there are more than 3 rounds."""
     if not round_scores:
         return 0
     if len(round_scores) == 1:
         return round_scores[0]
-    
-    # Drop the lowest score and average the rest
-    best_rounds = sorted(round_scores, reverse=True)[:-1]
+    if len(round_scores) > 3:
+        # Drop the lowest score and average the rest
+        best_rounds = sorted(round_scores, reverse=True)[:-1]
+    else:
+        best_rounds = round_scores
     return round(sum(best_rounds) / len(best_rounds), 2)
 
 def get_best_values_per_round(results, category, round_index):

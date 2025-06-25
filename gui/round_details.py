@@ -2,9 +2,34 @@ from PyQt6.QtWidgets import (
     QWidget, QVBoxLayout, QLabel, QTabWidget, QTableWidget,
     QTableWidgetItem, QPushButton, QComboBox
 )
+from PyQt6.QtGui import QColor, QFont
+from PyQt6.QtCore import Qt
 import json
 from utils.storage import load_results
 from scoring.scoring_engine import compute_round_score, get_best_values_per_round
+import math
+from PyQt6.QtWidgets import QTableWidgetItem
+from PyQt6.QtWidgets import QFileDialog
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+from PyQt6.QtWidgets import QFileDialog
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, PageBreak
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape
+
+class NumericTableWidgetItem(QTableWidgetItem):
+    def __init__(self, text, number):
+        super().__init__(text)
+        self.number = number
+
+    def __lt__(self, other):
+        if isinstance(other, NumericTableWidgetItem):
+            return self.number < other.number
+        return super().__lt__(other)
 
 
 class RoundDetailsTab(QWidget):
@@ -37,6 +62,15 @@ class RoundDetailsTab(QWidget):
         self.teams = []
         self.results = {}
         self.refresh_data()
+
+        self.export_pdf_btn = QPushButton("📄 Export to PDF")
+        self.export_pdf_btn.clicked.connect(self.export_to_pdf)
+        self.layout.addWidget(self.export_pdf_btn)
+
+        self.export_excel_btn = QPushButton("📊 Export to Excel")
+        self.export_excel_btn.clicked.connect(self.export_to_excel)
+        self.layout.addWidget(self.export_excel_btn)
+
 
     def refresh_data(self):
         # Load teams
@@ -72,15 +106,20 @@ class RoundDetailsTab(QWidget):
 
             self.populate_table(table, category, round_index)
 
+
     def populate_table(self, table, category, round_index):
         headers = [
-            "Team ID", "Team Name",
-            "Payload", "Circuit", "Glide",
-            "Loading", "Altitude", "Total"
+        "Team ID", "Team Name",
+        "Payload", "Circuit", "Glide",
+        "Loading", "Altitude", "Flight Score",
+        "Takeoff", "Pilot", "Legal", "Landing", "Repl. Parts"
         ]
+
         table.setColumnCount(len(headers))
         table.setHorizontalHeaderLabels(headers)
         table.setRowCount(len(self.teams))
+        table.setSortingEnabled(False)  # We'll enable it later after filling it
+
 
         # Load best values for the round
         best_Cdes, best_Tcarga, best_Tcircuit, best_Tglide = get_best_values_per_round(
@@ -145,8 +184,10 @@ class RoundDetailsTab(QWidget):
                 
                 if category == "Academic":
                     altitude_score = 4.3636e-6 * (A60s ** 4) - 0.001215 * (A60s ** 3) + 0.095732 * (A60s ** 2) - 0.86741 * A60s
+                    altitude_score = math.ceil(altitude_score * 10) / 10
                 elif category == "Clubs":
                     altitude_score = 6.5455e-6 * (A60s ** 4) - 0.001822 * (A60s ** 3) + 0.1436 * (A60s ** 2) - 1.3011 * A60s
+                    altitude_score = math.ceil(altitude_score * 10) / 10
                 else:
                     altitude_score = 0
                 
@@ -159,6 +200,7 @@ class RoundDetailsTab(QWidget):
                     best_glide_time=best_Tglide
                 )
 
+
                 values = [
                     f"{payload_score:.2f}",
                     f"{circuit_score:.2f}",
@@ -168,10 +210,122 @@ class RoundDetailsTab(QWidget):
                     f"{total:.2f}",
                 ]
 
+                takeoff = inputs.get("Takeoff Distance", "-")
+                if isinstance(takeoff, (int, float)):
+                    takeoff = str(int(round(takeoff)))
+                pilot = "Team" if inputs.get("Pilot") else "External"
+                legal = "✔️" if inputs.get("Legal Flight") else "❌"
+                landing = "✔️" if inputs.get("Good Landing") else "❌"
+                replacements = "No" if inputs.get("Replacement Parts") else "Yes"
+
+                values += [str(takeoff), pilot, legal, landing, replacements]
+
+
             # Fill table row
-            table.setItem(row, 0, QTableWidgetItem(tid))
+            table.setItem(row, 0, NumericTableWidgetItem(tid, int(tid)))
             table.setItem(row, 1, QTableWidgetItem(name))
             for col, val in enumerate(values, start=2):
-                table.setItem(row, col, QTableWidgetItem(val))
+                item = QTableWidgetItem(val)
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+                if col == 7:  # Total Score column (index 7 from start=2)
+                    item.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+                    item.setForeground(QColor("#228B22"))  # Forest Green
+                elif 2 <= col <= 6:  # Payload to Altitude (core scoring)
+                    item.setFont(QFont("Arial", 9, QFont.Weight.DemiBold))
+                elif col >= 8:  # Extra fields
+                    item.setFont(QFont("Arial", 8))
+                    item.setForeground(QColor("#888888"))  # Dim gray
+
+                table.setItem(row, col, item)
+
+
+        table.horizontalHeaderItem(7).setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        table.horizontalHeaderItem(7).setForeground(QColor("#228B22"))
 
         table.resizeColumnsToContents()
+        table.setSortingEnabled(True)
+ 
+    def export_to_pdf(self):
+
+        filename, _ = QFileDialog.getSaveFileName(self, "Export Round Details to PDF", "round_details.pdf", "PDF Files (*.pdf)")
+        if not filename:
+            return
+
+        doc = SimpleDocTemplate(filename, pagesize=landscape(A4))
+        elements = []
+        styles = getSampleStyleSheet()
+        category = self.category_dropdown.currentText()
+
+        for tab_index in range(self.round_tabs.count()):
+            tab = self.round_tabs.widget(tab_index)
+            table_widget = tab.findChild(QTableWidget)
+
+            # Round title
+            title = Paragraph(f"<b>{category} - Round {tab_index + 1}</b>", styles["Heading2"])
+            elements.append(title)
+            elements.append(Spacer(1, 12))
+
+            # Extract headers
+            headers = [table_widget.horizontalHeaderItem(i).text() for i in range(table_widget.columnCount())]
+            data = [headers]
+
+            # Extract rows
+            for row in range(table_widget.rowCount()):
+                row_data = []
+                for col in range(table_widget.columnCount()):
+                    item = table_widget.item(row, col)
+                    row_data.append(item.text() if item else "")
+                data.append(row_data)
+
+            # Build ReportLab Table
+            pdf_table = Table(data, repeatRows=1, hAlign='LEFT')
+            pdf_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor("#B50220")),  # header
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.HexColor("#f9f9f9"), colors.HexColor("#ffffff")])
+            ]))
+
+            elements.append(pdf_table)
+            elements.append(PageBreak())
+
+        doc.build(elements)
+
+    def export_to_excel(self):
+        filename, _ = QFileDialog.getSaveFileName(self, "Export Round Details to Excel", "round_details.xlsx", "Excel Files (*.xlsx)")
+        if not filename:
+            return
+
+        wb = Workbook()
+        wb.remove(wb.active)  # Remove default sheet
+
+        for tab_index in range(self.round_tabs.count()):
+            tab = self.round_tabs.widget(tab_index)
+            table = tab.findChild(QTableWidget)
+
+            sheet_title = f"Round_{tab_index + 1}"
+            ws = wb.create_sheet(title=sheet_title)
+
+            # Headers
+            for col in range(table.columnCount()):
+                header = table.horizontalHeaderItem(col).text()
+                ws.cell(row=1, column=col+1, value=header)
+
+            # Rows
+            for row in range(table.rowCount()):
+                for col in range(table.columnCount()):
+                    item = table.item(row, col)
+                    text = item.text() if item else ""
+                    ws.cell(row=row+2, column=col+1, value=text)
+
+            # Auto width
+            for col in range(1, table.columnCount() + 1):
+                ws.column_dimensions[get_column_letter(col)].width = 16
+
+        wb.save(filename)
+
