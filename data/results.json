@@ -3,9 +3,9 @@
     "1": [
       {
         "inputs": {
-          "Requested Payload": true,
-          "Unloaded Payload": true,
-          "Time Circuit": 60.0,
+          "Requested Payload": 0.9,
+          "Unloaded Payload": 0.9,
+          "Time Circuit": 55.0,
           "Time Glide": 60.0,
           "Altitude": 80.0,
           "Loading Time": 20.0,
@@ -15,13 +15,13 @@
           "Replacement Parts": true,
           "Takeoff Distance": 20.0
         },
-        "score": 569.17,
-        "round": 0
+        "round": 0,
+        "score": 639.91
       },
       {
         "inputs": {
           "Requested Payload": 1.0,
-          "Unloaded Payload": 1.0,
+          "Unloaded Payload": 0.9,
           "Time Circuit": 60.0,
           "Time Glide": 90.0,
           "Altitude": 60.0,
@@ -32,27 +32,61 @@
           "Replacement Parts": true,
           "Takeoff Distance": 20.0
         },
-        "score": 769.21,
-        "round": 0
+        "round": 1,
+        "score": 621.17
       }
     ],
     "2": [
       {
+        "score": 304.24,
         "inputs": {
-          "Requested Payload": true,
-          "Unloaded Payload": true,
-          "Time Circuit": 60.0,
-          "Time Glide": 60.0,
-          "Altitude": 80.0,
-          "Loading Time": 20.0,
+          "Requested Payload": 3.0,
+          "Unloaded Payload": 1.0,
+          "Time Circuit": 90.0,
+          "Time Glide": 78.0,
+          "Altitude": 46.0,
+          "Loading Time": 25.0,
+          "Pilot": 0,
+          "Legal Flight": 1,
+          "Good Landing": 1,
+          "Replacement Parts": 1,
+          "Takeoff Distance": 40
+        },
+        "round": 0
+      },
+      {
+        "inputs": {
+          "Requested Payload": 3.0,
+          "Unloaded Payload": 1.0,
+          "Time Circuit": 90.0,
+          "Time Glide": 78.0,
+          "Altitude": 46.0,
+          "Loading Time": 25.0,
           "Pilot": true,
           "Legal Flight": true,
           "Good Landing": true,
-          "Replacement Parts": false,
+          "Replacement Parts": true,
           "Takeoff Distance": 20.0
         },
-        "score": 5882.68,
+        "score": 434.06,
         "round": 1
+      },
+      {
+        "score": 579.17,
+        "inputs": {
+          "Requested Payload": 3.0,
+          "Unloaded Payload": 2.0,
+          "Time Circuit": 60.0,
+          "Time Glide": 60.0,
+          "Altitude": 60.0,
+          "Loading Time": 60.0,
+          "Pilot": 1,
+          "Legal Flight": 1,
+          "Good Landing": 1,
+          "Replacement Parts": 1,
+          "Takeoff Distance": 20
+        },
+        "round": 2
       }
     ],
     "7": [],
@@ -71,13 +105,30 @@
           "Replacement Parts": true,
           "Takeoff Distance": 40.0
         },
-        "score": 618.45,
+        "score": 559.76,
         "round": 0
+      },
+      {
+        "inputs": {
+          "Requested Payload": true,
+          "Unloaded Payload": true,
+          "Time Circuit": 0.0,
+          "Time Glide": 0.0,
+          "Altitude": 0.0,
+          "Loading Time": 30.0,
+          "Pilot": true,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 40.0
+        },
+        "score": 233.7,
+        "round": 1
       }
     ],
     "4": [
       {
-        "score": 551.41,
+        "score": 495.11,
         "inputs": {
           "Requested Payload": 1.0,
           "Unloaded Payload": 0.9,
@@ -93,12 +144,65 @@
         },
         "round": 0
       }
+    ],
+    "5": [
+      {
+        "score": 262.63,
+        "inputs": {
+          "Requested Payload": 3.0,
+          "Unloaded Payload": 1.0,
+          "Time Circuit": 50.0,
+          "Time Glide": 30.0,
+          "Altitude": 60.0,
+          "Loading Time": 10.0,
+          "Pilot": 1,
+          "Legal Flight": 1,
+          "Good Landing": 0,
+          "Replacement Parts": 1,
+          "Takeoff Distance": 60
+        },
+        "round": 0
+      },
+      {
+        "score": 500.95,
+        "inputs": {
+          "Requested Payload": 0.6,
+          "Unloaded Payload": 0.55,
+          "Time Circuit": 50.0,
+          "Time Glide": 30.0,
+          "Altitude": 60.0,
+          "Loading Time": 10.0,
+          "Pilot": 1,
+          "Legal Flight": 1,
+          "Good Landing": 1,
+          "Replacement Parts": 1,
+          "Takeoff Distance": 20
+        },
+        "round": 1
+      },
+      {
+        "inputs": {
+          "Requested Payload": 0.6,
+          "Unloaded Payload": 0.55,
+          "Time Circuit": 60.0,
+          "Time Glide": 70.0,
+          "Altitude": 60.0,
+          "Loading Time": 10.0,
+          "Pilot": false,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 40.0
+        },
+        "score": 339.28,
+        "round": 2
+      }
     ]
   },
   "Clubs": {
     "17": [
       {
-        "score": 5929.74,
+        "score": 1000.25,
         "inputs": {
           "Requested Payload": 1.0,
           "Unloaded Payload": 1.0,

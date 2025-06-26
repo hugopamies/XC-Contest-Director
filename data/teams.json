@@ -1,8 +1,8 @@
 {
   "Academic": [
     {"id": 1, "name": "Saka TUDa", "organization": "Technische Universität Darmstadt"},
-    {"id": 2, "name": "UVigo Aerotech: AINE", "organization": "Universidad de Vigo"},
-    {"id": 3, "name": "UCA&AIR", "organization": "Universidad de Cádiz"},
+    {"id": 2, "name": "UVigo Aerotech AINE", "organization": "Universidad de Vigo"},
+    {"id": 3, "name": "UCA&AIR", "organization": "Universidad de Cadiz"},
     {"id": 4, "name": "EOLO", "organization": "Universidad Politecnica de Valencia"},
     {"id": 5, "name": "Diana", "organization": "Universidad de Castilla la Mancha"},
     {"id": 6, "name": "ARTEMIS", "organization": "Universidad Politecnica de Valencia"},

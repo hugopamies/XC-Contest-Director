@@ -1,6 +1,6 @@
 import math
 
-def compute_round_score(data, category="academic",
+def compute_round_score(data, category="Academic",
                         best_unloaded_payload=1.0,
                         best_loading_time=1.0,
                         best_circuit_time=1.0,
@@ -11,14 +11,14 @@ def compute_round_score(data, category="academic",
 
     # Scoring weights per category
     weights = {
-        "academic": {
+        "Academic": {
             "payload": 150,
             "circuit": 150,
             "glide": 100,
             "altitude": 100,
             "loading": 100
         },
-        "clubs": {
+        "Clubs": {
             "payload": 200,
             "circuit": 200,
             "glide": 150,
@@ -27,7 +27,7 @@ def compute_round_score(data, category="academic",
         }
     }
 
-    w = weights.get(category, weights["academic"])  # fallback to academic if not found
+    w = weights.get(category, weights["Academic"])  # fallback to academic if not found
 
     # Input values
     Csol = data['Requested Payload']
@@ -102,7 +102,7 @@ def compute_round_score(data, category="academic",
     return round(total, 2)
 
 def total_score(round_scores):
-    """Total score = average of all rounds, excluding the worst only if there are more than 3 rounds."""
+    """total score = average of all rounds, excluding the worst only if there are more than 3 rounds."""
     if not round_scores:
         return 0
     if len(round_scores) == 1:

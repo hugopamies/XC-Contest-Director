@@ -14,13 +14,27 @@ def save_results(data):
         json.dump(data, f, indent=2)
 
 
-def add_round_score(team_id, category, score):
+def add_round_score(team_id, category, score_entry):
+    """
+    Adds or updates a round score for a team in a specific category.
+    The score_entry must contain a 'round' key indicating which round it belongs to.
+    """
     data = load_results()
     str_id = str(team_id)
+    round_index = score_entry.get("round")
+
     if str_id not in data[category]:
         data[category][str_id] = []
-    data[category][str_id].append(score)
+
+    team_scores = data[category][str_id]
+
+    # Extend the list if the round index is beyond current length
+    while len(team_scores) <= round_index:
+        team_scores.append({})
+
+    team_scores[round_index] = score_entry  # ✅ Replace at round index
     save_results(data)
+
 
 def get_team_scores(team_id, category):
     data = load_results()

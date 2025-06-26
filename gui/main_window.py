@@ -10,7 +10,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("XtraChallenge 2025 Contest Director")
-        self.setMinimumSize(1000, 800)
+        self.setMinimumSize(1900, 1080)
+        self.showMaximized()
 
         tabs = QTabWidget()
         tabs.addTab(TeamRankingsTab(), "Teams & Rankings")

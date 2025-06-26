@@ -1,17 +1,16 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QTableWidget, QTableWidgetItem, QPushButton, QTabWidget, QFileDialog, QMessageBox
 from PyQt6.QtCore import Qt
 import json
-from utils.storage import load_results
-from scoring.scoring_engine import total_score
+from utils.storage import load_results, save_results
+from scoring.scoring_engine import total_score, compute_round_score, get_best_values_per_round
 from utils.pdf_exporter import export_rankings_to_pdf
 from utils.xlsx_exporter import export_all_data_to_excel
-from scoring.scoring_engine import compute_round_score, get_best_values_per_round
 
 
 class NumericTableWidgetItem(QTableWidgetItem):
     def __init__(self, text, number):
         super().__init__(text)
-        self.number = number  # Store the numeric value
+        self.number = number
 
     def __lt__(self, other):
         if isinstance(other, NumericTableWidgetItem):
@@ -56,13 +55,11 @@ class TeamRankingsTab(QWidget):
         layout = QVBoxLayout()
         table = QTableWidget()
 
-        # ✅ LOAD teams and results HERE
         with open("data/teams.json", "r", encoding="utf-8") as f:
             teams = json.load(f)
 
         results = load_results()
 
-        # Load all team scores and find max rounds
         all_scores = []
         max_rounds = 0
 
@@ -75,8 +72,7 @@ class TeamRankingsTab(QWidget):
         table.setColumnCount(2 + max_rounds + 1)
         headers = ["Team ID", "Team Name"] + [f"R{i+1}" for i in range(max_rounds)] + ["Total Score"]
         table.setHorizontalHeaderLabels(headers)
-        table.setSortingEnabled(True)  # ✅ Enable sorting
-
+        table.setSortingEnabled(True)
 
         table.setRowCount(len(all_scores))
 
@@ -98,37 +94,44 @@ class TeamRankingsTab(QWidget):
                         best_glide_time=best_Tglide
                     )
                     recalculated_scores.append(score)
+
+                    # ✅ Update the result entry
+                    r["score"] = score
+                    r["inputs"] = inputs
+                    r["round"] = i
                 else:
-                    # Fallback: keep legacy or simple float score
-                    recalculated_scores.append(float(r) if isinstance(r, (int, float)) else 0)
+                    score = float(r) if isinstance(r, (int, float)) else 0
+                    recalculated_scores.append(score)
+                    results[category][tid][i] = {
+                        "inputs": {},
+                        "score": score,
+                        "round": i
+                    }
 
-            
-
-        
             total = total_score(recalculated_scores)
 
             item_id = NumericTableWidgetItem(tid, int(tid))
             table.setItem(row, 0, item_id)
-
             table.setItem(row, 1, QTableWidgetItem(name))
 
             for i, score in enumerate(recalculated_scores):
-
                 table.setItem(row, 2 + i, QTableWidgetItem(str(round(score, 2))))
 
             item_total = NumericTableWidgetItem(str(round(total, 2)), total)
             table.setItem(row, 2 + max_rounds, item_total)
 
+        # ✅ Save updated results
+        save_results(results)
 
         layout.addWidget(QLabel(f"{category.capitalize()} Team Rankings"))
         layout.addWidget(table)
+
         refresh_btn = QPushButton("🔄 Refresh Rankings")
         refresh_btn.clicked.connect(lambda: self.rebuild_tab(category, widget))
         layout.addWidget(refresh_btn)
 
         widget.setLayout(layout)
         table.sortItems(2 + max_rounds, Qt.SortOrder.DescendingOrder)
-
         return widget
 
     def export_pdf(self):

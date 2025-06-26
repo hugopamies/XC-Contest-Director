@@ -1,8 +1,6 @@
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QComboBox, QPushButton, QListWidget, QMessageBox
-from utils.storage import load_results, save_results, get_team_scores, delete_score
+from utils.storage import load_results, save_results, get_team_scores, delete_score, update_score
 import json
-from utils.storage import update_score
-from scoring.scoring_engine import compute_round_score, get_best_values_per_round
 from PyQt6.QtWidgets import QDialog, QFormLayout, QLineEdit, QDialogButtonBox
 
 class EditScoresTab(QWidget):
@@ -28,15 +26,16 @@ class EditScoresTab(QWidget):
         self.layout.addWidget(QLabel("Scores"))
         self.layout.addWidget(self.score_list)
         self.layout.addWidget(self.delete_button)
-        self.edit_button = QPushButton("Edit Selected Score")
+
+        self.edit_button = QPushButton("Edit Selected Round Data")
         self.edit_button.clicked.connect(self.edit_selected_score)
         self.layout.addWidget(self.edit_button)
+
         self.setLayout(self.layout)
 
         self.teams = {}
         self.load_teams()
 
-    
     def load_teams(self):
         cat = self.category_dropdown.currentText()
         with open("data/teams.json", "r", encoding="utf-8") as f:
@@ -54,7 +53,10 @@ class EditScoresTab(QWidget):
         if tid:
             scores = get_team_scores(tid, cat)
             for i, score in enumerate(scores):
-                self.score_list.addItem(f"Round {i+1}: {score}")
+                label = f"Round {i + 1}"
+                if isinstance(score, dict) and "score" in score:
+                    label += f": {score['score']:.2f}"
+                self.score_list.addItem(label)
 
     def delete_selected_score(self):
         selected = self.score_list.currentRow()
@@ -70,7 +72,7 @@ class EditScoresTab(QWidget):
                 self.load_scores()
             else:
                 QMessageBox.critical(self, "Error", "Could not delete score.")
-    
+
     def edit_selected_score(self):
         selected_index = self.score_list.currentRow()
         if selected_index == -1:
@@ -117,26 +119,13 @@ class EditScoresTab(QWidget):
                     else:
                         new_inputs[k] = float(val)
 
-                # Get best-of-round values
-                results = load_results()
-                best_Cdes, best_Tcarga, best_Tcircuit, best_Tglide = get_best_values_per_round(results, cat, entry.get("round", selected_index))
-
-                new_score = compute_round_score(
-                    new_inputs, cat,
-                    best_unloaded_payload=best_Cdes,
-                    best_loading_time=best_Tcarga,
-                    best_circuit_time=best_Tcircuit,
-                    best_glide_time=best_Tglide
-                )
-
                 updated_entry = {
                     "inputs": new_inputs,
-                    "score": new_score,
                     "round": entry.get("round", selected_index)
                 }
 
                 update_score(tid, cat, selected_index, updated_entry)
-                QMessageBox.information(self, "Updated", f"Score updated: {new_score}")
+                QMessageBox.information(self, "Updated", "Round data updated successfully.")
                 self.load_scores()
 
             except Exception as e:

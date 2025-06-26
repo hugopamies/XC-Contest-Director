@@ -14,7 +14,7 @@ def export_rankings_to_pdf(filename="rankings.pdf"):
     data = [["Team ID", "Team Name", "Category", "Total Score"]]
     combined = []
 
-    for category in ["academic", "clubs"]:
+    for category in ["Academic", "Clubs"]:
         for team in teams[category]:
             tid = str(team["id"])
             rounds = results.get(category, {}).get(tid, [])

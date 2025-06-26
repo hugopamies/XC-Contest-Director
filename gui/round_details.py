@@ -109,10 +109,11 @@ class RoundDetailsTab(QWidget):
 
     def populate_table(self, table, category, round_index):
         headers = [
-        "Team ID", "Team Name",
-        "Payload", "Circuit", "Glide",
-        "Loading", "Altitude", "Flight Score",
-        "Takeoff", "Pilot", "Legal", "Landing", "Repl. Parts"
+            "Rank",  # New column for ranking
+            "Team ID", "Team Name",
+            "Payload", "Circuit", "Glide",
+            "Loading", "Altitude", "Flight Score",
+            "Takeoff", "Pilot", "Legal", "Landing", "Repl. Parts"
         ]
 
         table.setColumnCount(len(headers))
@@ -120,12 +121,14 @@ class RoundDetailsTab(QWidget):
         table.setRowCount(len(self.teams))
         table.setSortingEnabled(False)  # We'll enable it later after filling it
 
-
         # Load best values for the round
         best_Cdes, best_Tcarga, best_Tcircuit, best_Tglide = get_best_values_per_round(
             self.results, category, round_index
         )
         best_eff = best_Cdes / (best_Tcarga ** 0.5) if best_Tcarga > 0 else 1
+
+        # Prepare list to compute rankings
+        team_scores = []
 
         for row, team in enumerate(self.teams):
             tid = str(team["id"])
@@ -134,6 +137,7 @@ class RoundDetailsTab(QWidget):
             team_rounds = self.results.get(category, {}).get(tid, [])
             if round_index >= len(team_rounds):
                 values = ["0.00"] * 6 + ["0.00"]  # all subscores + total
+                total = 0.0
             else:
                 entry = team_rounds[round_index]
                 inputs = entry.get("inputs", {})
@@ -220,31 +224,59 @@ class RoundDetailsTab(QWidget):
 
                 values += [str(takeoff), pilot, legal, landing, replacements]
 
+            # Save for ranking
+            team_scores.append({
+                "row": row,
+                "total": float(values[5]) if len(values) > 5 else 0.0,  # total score is at index 5
+            })
 
-            # Fill table row
-            table.setItem(row, 0, NumericTableWidgetItem(tid, int(tid)))
-            table.setItem(row, 1, QTableWidgetItem(name))
-            for col, val in enumerate(values, start=2):
+            # Fill table row (leave rank for now, fill after sorting)
+            table.setItem(row, 1, NumericTableWidgetItem(tid, int(tid)))
+            table.setItem(row, 2, QTableWidgetItem(name))
+            for col, val in enumerate(values, start=3):
                 item = QTableWidgetItem(val)
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-                if col == 7:  # Total Score column (index 7 from start=2)
+                if col == 8:  # Total Score column (index 8 from start=3)
                     item.setFont(QFont("Arial", 10, QFont.Weight.Bold))
                     item.setForeground(QColor("#228B22"))  # Forest Green
-                elif 2 <= col <= 6:  # Payload to Altitude (core scoring)
+                elif 3 <= col <= 7:  # Payload to Altitude (core scoring)
                     item.setFont(QFont("Arial", 9, QFont.Weight.DemiBold))
-                elif col >= 8:  # Extra fields
+                elif col >= 9:  # Extra fields
                     item.setFont(QFont("Arial", 8))
                     item.setForeground(QColor("#888888"))  # Dim gray
 
                 table.setItem(row, col, item)
 
+        # Compute ranking based on total score (descending)
+        sorted_scores = sorted(team_scores, key=lambda x: x["total"], reverse=True)
+        rank_map = {}
+        current_rank = 1
+        last_score = None
+        for idx, entry in enumerate(sorted_scores):
+            score = entry["total"]
+            if last_score is not None and score < last_score:
+                current_rank = idx + 1
+            rank_map[entry["row"]] = current_rank
+            last_score = score
 
-        table.horizontalHeaderItem(7).setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        table.horizontalHeaderItem(7).setForeground(QColor("#228B22"))
+        # Fill in the rank column
+        for row in range(len(self.teams)):
+            rank_item = QTableWidgetItem(str(rank_map[row]))
+            rank_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            rank_item.setFont(QFont("Arial", 10, QFont.Weight.Bold))
+            table.setItem(row, 0, rank_item)
+
+        table.horizontalHeaderItem(8).setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        table.horizontalHeaderItem(8).setForeground(QColor("#228B22"))
 
         table.resizeColumnsToContents()
         table.setSortingEnabled(True)
+
+        # Set all row heights to the same value for uniformity
+        uniform_height = 32  # You can adjust this value as needed
+        for row in range(table.rowCount()):
+            table.setRowHeight(row, uniform_height)
  
     def export_to_pdf(self):
 
@@ -328,4 +360,3 @@ class RoundDetailsTab(QWidget):
                 ws.column_dimensions[get_column_letter(col)].width = 16
 
         wb.save(filename)
-
