@@ -1,6 +1,7 @@
 # XtraChallenge 2025 - UAV Contest Director and Dashboard
 
 This is the official scoring and visualization dashboard for the **XtraChallenge 2025** UAV competition. It enables contest directors to manage, input, visualize, and export team performance data in real time across multiple categories and rounds.
+Please note that all existing scores in this code are mere examples and not real. The final scores will be published in www.xtra2upv.com after the competition.
 
 ##  Features
 
