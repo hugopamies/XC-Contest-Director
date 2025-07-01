@@ -3,8 +3,8 @@
     "1": [
       {
         "inputs": {
-          "Requested Payload": 0.9,
-          "Unloaded Payload": 0.9,
+          "Requested Payload": 2.0,
+          "Unloaded Payload": 2.0,
           "Time Circuit": 55.0,
           "Time Glide": 60.0,
           "Altitude": 80.0,
@@ -16,7 +16,7 @@
           "Takeoff Distance": 20.0
         },
         "round": 0,
-        "score": 639.91
+        "score": 667.5
       },
       {
         "inputs": {
@@ -38,7 +38,7 @@
     ],
     "2": [
       {
-        "score": 304.24,
+        "score": 256.46,
         "inputs": {
           "Requested Payload": 3.0,
           "Unloaded Payload": 1.0,
@@ -105,7 +105,7 @@
           "Replacement Parts": true,
           "Takeoff Distance": 40.0
         },
-        "score": 559.76,
+        "score": 452.43,
         "round": 0
       },
       {
@@ -128,7 +128,7 @@
     ],
     "4": [
       {
-        "score": 495.11,
+        "score": 393.39,
         "inputs": {
           "Requested Payload": 1.0,
           "Unloaded Payload": 0.9,
@@ -147,7 +147,7 @@
     ],
     "5": [
       {
-        "score": 262.63,
+        "score": 200.13,
         "inputs": {
           "Requested Payload": 3.0,
           "Unloaded Payload": 1.0,
@@ -219,5 +219,24 @@
         "round": 0
       }
     ]
+  },
+  "static_scores": {
+    "Academic": {
+      "1": 100.0,
+      "2": 100.0,
+      "3": 200.0,
+      "4": 200.0,
+      "5": 250.0,
+      "6": 250.0,
+      "7": 250.0,
+      "8": 250.0,
+      "9": 250.0,
+      "10": 250.0,
+      "11": 250.0,
+      "12": 250.0,
+      "13": 250.0,
+      "14": 250.0,
+      "15": 250.0
+    }
   }
 }
