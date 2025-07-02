@@ -16,7 +16,7 @@
           "Takeoff Distance": 20.0
         },
         "round": 0,
-        "score": 667.5
+        "score": 626.59
       },
       {
         "inputs": {
@@ -34,11 +34,28 @@
         },
         "round": 1,
         "score": 621.17
+      },
+      {
+        "inputs": {
+          "Requested Payload": 1.2,
+          "Unloaded Payload": 1.15,
+          "Time Circuit": 60.0,
+          "Time Glide": 60.0,
+          "Altitude": 60.0,
+          "Loading Time": 60.0,
+          "Pilot": true,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 20
+        },
+        "round": 2,
+        "score": 535.81
       }
     ],
     "2": [
       {
-        "score": 256.46,
+        "score": 239.59,
         "inputs": {
           "Requested Payload": 3.0,
           "Unloaded Payload": 1.0,
@@ -105,7 +122,7 @@
           "Replacement Parts": true,
           "Takeoff Distance": 40.0
         },
-        "score": 452.43,
+        "score": 418.68,
         "round": 0
       },
       {
@@ -128,7 +145,7 @@
     ],
     "4": [
       {
-        "score": 393.39,
+        "score": 370.89,
         "inputs": {
           "Requested Payload": 1.0,
           "Unloaded Payload": 0.9,
@@ -147,7 +164,7 @@
     ],
     "5": [
       {
-        "score": 200.13,
+        "score": 182.13,
         "inputs": {
           "Requested Payload": 3.0,
           "Unloaded Payload": 1.0,
@@ -197,6 +214,25 @@
         "score": 339.28,
         "round": 2
       }
+    ],
+    "6": [
+      {
+        "inputs": {
+          "Requested Payload": 2.0,
+          "Unloaded Payload": 2.0,
+          "Time Circuit": 38.0,
+          "Time Glide": 49.0,
+          "Altitude": 89.0,
+          "Loading Time": 13.0,
+          "Pilot": true,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 20
+        },
+        "round": 0,
+        "score": 686.16
+      }
     ]
   },
   "Clubs": {
@@ -222,7 +258,7 @@
   },
   "static_scores": {
     "Academic": {
-      "1": 100.0,
+      "1": 230.0,
       "2": 100.0,
       "3": 200.0,
       "4": 200.0,
@@ -237,6 +273,44 @@
       "13": 250.0,
       "14": 250.0,
       "15": 250.0
+    }
+  },
+  "penalties": {
+    "Academic": {
+      "1": 0.0,
+      "2": 0.0,
+      "3": 0.0,
+      "4": 0.0,
+      "5": 0.0,
+      "6": 0.0,
+      "7": 0.0,
+      "8": 25.0,
+      "9": 0.0,
+      "10": 0.0,
+      "11": 0.0,
+      "12": 0.0,
+      "13": 5.0,
+      "14": 0.0,
+      "15": 0.0
+    }
+  },
+  "penalty_reasons": {
+    "Academic": {
+      "1": "",
+      "2": "",
+      "3": "",
+      "4": "",
+      "5": "",
+      "6": "",
+      "7": "",
+      "8": "",
+      "9": "",
+      "10": "",
+      "11": "",
+      "12": "",
+      "13": "Deviation of more than 1cm",
+      "14": "",
+      "15": ""
     }
   }
 }

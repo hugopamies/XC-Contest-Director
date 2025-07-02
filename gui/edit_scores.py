@@ -14,8 +14,9 @@ class EditScoresTab(QWidget):
 
         self.team_dropdown = QComboBox()
         self.team_dropdown.currentIndexChanged.connect(self.load_scores)
-
         self.score_list = QListWidget()
+
+
         self.delete_button = QPushButton("Delete Selected Score")
         self.delete_button.clicked.connect(self.delete_selected_score)
 
@@ -25,11 +26,18 @@ class EditScoresTab(QWidget):
         self.layout.addWidget(self.team_dropdown)
         self.layout.addWidget(QLabel("Scores"))
         self.layout.addWidget(self.score_list)
+
+        # Add refresh button
+        self.refresh_button = QPushButton("Refresh Data")
+        self.refresh_button.clicked.connect(self.refresh_data)
+        self.layout.addWidget(self.refresh_button)
         self.layout.addWidget(self.delete_button)
 
         self.edit_button = QPushButton("Edit Selected Round Data")
         self.edit_button.clicked.connect(self.edit_selected_score)
         self.layout.addWidget(self.edit_button)
+
+
 
         self.setLayout(self.layout)
 
@@ -130,3 +138,6 @@ class EditScoresTab(QWidget):
 
             except Exception as e:
                 QMessageBox.critical(self, "Error", f"Invalid input: {e}")
+
+    def refresh_data(self):
+        self.load_teams()

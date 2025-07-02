@@ -18,6 +18,7 @@ class StatsDashboard(QWidget):
         self.round_index = 0
         self.total_rounds = self.get_max_rounds()
         self.auto_rotate = True
+        self.auto_rotate_limit = 1  # 1 = only 1st round, 2 = first 2 rounds, 3 = first 3 rounds
 
         main_layout = QVBoxLayout()
         main_layout.setContentsMargins(8, 8, 8, 8)
@@ -34,10 +35,31 @@ class StatsDashboard(QWidget):
         self.toggle_button.setCheckable(True)
         self.toggle_button.setChecked(True)
         self.toggle_button.clicked.connect(self.toggle_auto_rotate)
+
+        self.refresh_button = QPushButton("🔄 Refresh")
+        self.refresh_button.clicked.connect(self.refresh_data)
+
+        # Add buttons for auto-rotate range
+        self.btn_show_1 = QPushButton("Limit 1")
+        self.btn_show_2 = QPushButton("Limit 2")
+        self.btn_show_3 = QPushButton("Limit 3")
+        self.btn_show_1.setCheckable(True)
+        self.btn_show_2.setCheckable(True)
+        self.btn_show_3.setCheckable(True)
+        self.btn_show_1.setChecked(True)
+
+        self.btn_show_1.clicked.connect(lambda: self.set_auto_rotate_limit(1))
+        self.btn_show_2.clicked.connect(lambda: self.set_auto_rotate_limit(2))
+        self.btn_show_3.clicked.connect(lambda: self.set_auto_rotate_limit(3))
+
         nav_layout.addWidget(QLabel("Select Round:"))
         nav_layout.addWidget(self.round_tabs)
         nav_layout.addStretch()
+        nav_layout.addWidget(self.btn_show_1)
+        nav_layout.addWidget(self.btn_show_2)
+        nav_layout.addWidget(self.btn_show_3)
         nav_layout.addWidget(self.toggle_button)
+        nav_layout.addWidget(self.refresh_button)
         main_layout.addLayout(nav_layout)
 
         self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -69,6 +91,32 @@ class StatsDashboard(QWidget):
 
         self.refresh_all()
 
+    def set_auto_rotate_limit(self, limit):
+        self.auto_rotate_limit = limit
+        self.btn_show_1.setChecked(limit == 1)
+        self.btn_show_2.setChecked(limit == 2)
+        self.btn_show_3.setChecked(limit == 3)
+        # Reset to first round if current round is out of new limit
+        if self.round_index >= self.auto_rotate_limit:
+            self.round_index = 0
+            self.round_tabs.setCurrentIndex(self.round_index)
+            self.refresh_all()
+        self.reset_timer()
+
+    def refresh_data(self):
+        self.results = load_results()
+        with open("data/teams.json", "r", encoding="utf-8") as f:
+            self.teams = json.load(f)
+        self.total_rounds = self.get_max_rounds()
+        # Update round tabs in case number of rounds changed
+        self.round_tabs.clear()
+        for i in range(self.total_rounds):
+            self.round_tabs.addTab(f"Round {i + 1}")
+        if self.round_index >= self.total_rounds:
+            self.round_index = self.total_rounds - 1
+        self.round_tabs.setCurrentIndex(self.round_index)
+        self.refresh_all()
+
     def get_max_rounds(self):
         return max(
             max(len(self.results.get(cat, {}).get(str(team["id"]), [])) for team in self.teams.get(cat, []))
@@ -90,7 +138,12 @@ class StatsDashboard(QWidget):
             self.toggle_button.setText("▶️ Auto-Rotate")
 
     def next_round(self):
-        self.round_index = (self.round_index + 1) % self.total_rounds
+        # Only auto-rotate within the selected limit
+        if self.auto_rotate_limit > self.total_rounds:
+            limit = self.total_rounds
+        else:
+            limit = self.auto_rotate_limit
+        self.round_index = (self.round_index + 1) % limit
         self.round_tabs.setCurrentIndex(self.round_index)
         self.refresh_all()
         self.reset_timer()
@@ -113,6 +166,7 @@ class StatsDashboard(QWidget):
         layout.addWidget(label)
         self.figure_trends, self.ax_trends = plt.subplots()
         self.canvas_trends = FigureCanvas(self.figure_trends)
+        self.canvas_trends.setMinimumHeight(600)  # Ensure at least 600px tall
         layout.addWidget(self.canvas_trends)
 
         container = QWidget()
@@ -127,6 +181,13 @@ class StatsDashboard(QWidget):
                 name = team["name"]
                 rounds = self.results.get(cat, {}).get(tid, [])
                 x, y = [], []
+                # Compute R0 as static_score - penalties
+                static_score = team.get("static_score", 0)
+                penalties = team.get("penalties", 0)
+                r0_score = static_score - penalties
+                x.append(0)
+                y.append(r0_score if isinstance(r0_score, (int, float)) else 0)
+                # Add other rounds
                 for i, entry in enumerate(rounds):
                     score = entry.get("score") if isinstance(entry, dict) else entry
                     if isinstance(score, (int, float)):
@@ -140,13 +201,15 @@ class StatsDashboard(QWidget):
         self.ax_trends.set_xlabel("Round", fontsize=10)
         self.ax_trends.set_ylabel("Score", fontsize=10)
         self.ax_trends.set_ylim(0, 1000)
-        self.ax_trends.set_xlim(0.5, self.total_rounds + 0.5)
-        self.ax_trends.set_xticks(range(1, self.total_rounds + 1))
+        self.ax_trends.set_xlim(-0.5, self.total_rounds + 0.5)
+        self.ax_trends.set_xticks([0] + list(range(1, self.total_rounds + 1)))
+        self.ax_trends.set_xticklabels(["R0"] + [f"R{i}" for i in range(1, self.total_rounds + 1)])
         self.figure_trends.tight_layout()
         self.canvas_trends.draw()
 
     def init_best_metrics_tables(self):
-        layout = QVBoxLayout()
+        # Place the two tables side by side using QHBoxLayout
+        layout = QHBoxLayout()
 
         self.table_academic = self.create_metrics_table(" Academic Top Performers")
         self.table_clubs = self.create_metrics_table(" Clubs Top Performers")
@@ -164,7 +227,7 @@ class StatsDashboard(QWidget):
         table = QTableWidget()
         table.setStyleSheet("font-size: 11px;")
         table.setColumnCount(5)
-        table.setHorizontalHeaderLabels(["Rank", "Best Payloads", "Best Circuit Times", "Best Gliding Times", "Best Loading Times"])
+        table.setHorizontalHeaderLabels(["Rank", "Top Payloads", "Top Circuit Times", "Top Gliding Times", "Top Loading Times"])
         layout = QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(table)

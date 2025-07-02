@@ -110,7 +110,7 @@ class RoundDetailsTab(QWidget):
     def populate_table(self, table, category, round_index):
         headers = [
             "Rank",  # New column for ranking
-            "Team ID", "Team Name",
+            "Team ID", "Team Name", "Organization",  # Added Organization column
             "Payload", "Circuit", "Glide",
             "Loading", "Altitude", "Flight Score",
             "Takeoff", "Pilot", "Legal", "Landing", "Repl. Parts"
@@ -120,6 +120,9 @@ class RoundDetailsTab(QWidget):
         table.setHorizontalHeaderLabels(headers)
         table.setRowCount(len(self.teams))
         table.setSortingEnabled(False)  # We'll enable it later after filling it
+
+        # Remove row labels (numbers 1,2,3...) by hiding the vertical header
+        table.verticalHeader().setVisible(False)
 
         # Load best values for the round
         best_Cdes, best_Tcarga, best_Tcircuit, best_Tglide = get_best_values_per_round(
@@ -133,6 +136,7 @@ class RoundDetailsTab(QWidget):
         for row, team in enumerate(self.teams):
             tid = str(team["id"])
             name = team["name"]
+            organization = team.get("organization", "")  # Read organization, allow special chars
 
             team_rounds = self.results.get(category, {}).get(tid, [])
             if round_index >= len(team_rounds):
@@ -232,17 +236,18 @@ class RoundDetailsTab(QWidget):
 
             # Fill table row (leave rank for now, fill after sorting)
             table.setItem(row, 1, NumericTableWidgetItem(tid, int(tid)))
-            table.setItem(row, 2, QTableWidgetItem(name))
-            for col, val in enumerate(values, start=3):
+            table.setItem(row, 2, QTableWidgetItem(str(name)))
+            table.setItem(row, 3, QTableWidgetItem(str(organization)))  # Organization column, supports special chars
+            for col, val in enumerate(values, start=4):
                 item = QTableWidgetItem(val)
                 item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
 
-                if col == 8:  # Total Score column (index 8 from start=3)
+                if col == 9:  # Total Score column (index 9 from start=4)
                     item.setFont(QFont("Arial", 10, QFont.Weight.Bold))
                     item.setForeground(QColor("#228B22"))  # Forest Green
-                elif 3 <= col <= 7:  # Payload to Altitude (core scoring)
+                elif 4 <= col <= 8:  # Payload to Altitude (core scoring)
                     item.setFont(QFont("Arial", 9, QFont.Weight.DemiBold))
-                elif col >= 9:  # Extra fields
+                elif col >= 10:  # Extra fields
                     item.setFont(QFont("Arial", 8))
                     item.setForeground(QColor("#888888"))  # Dim gray
 
@@ -267,8 +272,8 @@ class RoundDetailsTab(QWidget):
             rank_item.setFont(QFont("Arial", 10, QFont.Weight.Bold))
             table.setItem(row, 0, rank_item)
 
-        table.horizontalHeaderItem(8).setFont(QFont("Arial", 10, QFont.Weight.Bold))
-        table.horizontalHeaderItem(8).setForeground(QColor("#228B22"))
+        table.horizontalHeaderItem(9).setFont(QFont("Arial", 10, QFont.Weight.Bold))
+        table.horizontalHeaderItem(9).setForeground(QColor("#228B22"))
 
         table.resizeColumnsToContents()
         table.setSortingEnabled(True)
