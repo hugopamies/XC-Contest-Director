@@ -11,13 +11,13 @@ class RoundInput(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(15, 15, 15, 15)
         layout.setSpacing(12)
-        layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
 
         # --- Team Selector ---
         team_selector_layout = QVBoxLayout()
-        team_selector_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        team_selector_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
         team_label = QLabel("Select Team")
-        team_label.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        team_label.setAlignment(Qt.AlignmentFlag.AlignLeft)
         team_selector_layout.addWidget(team_label)
         self.team_dropdown = QComboBox()
         with open("data/teams.json", "r", encoding="utf-8") as f:
@@ -33,7 +33,7 @@ class RoundInput(QWidget):
         form_section = QGroupBox("Round Input Data")
         form_layout = QFormLayout()
         form_layout.setSpacing(8)
-        form_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+        form_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         self.inputs = {
             "Requested Payload": QLineEdit(),
@@ -61,28 +61,29 @@ class RoundInput(QWidget):
         takeoff_distance_dropdown.addItem("20 m", 20)
         takeoff_distance_dropdown.addItem("40 m", 40)
         takeoff_distance_dropdown.addItem("60 m", 60)
+        takeoff_distance_dropdown.addItem("No takeoff achieved", 0)
         self.inputs["Takeoff Distance"] = takeoff_distance_dropdown
 
-        # Set fixed width for inputs and center them
+        # Set fixed width for inputs and align them left
         self.input_width = 300  # Will be updated in resizeEvent
 
         for label, widget in self.inputs.items():
             if isinstance(widget, (QLineEdit, QComboBox)):
                 widget.setFixedWidth(self.input_width)
             row_layout = QVBoxLayout()
-            row_layout.setAlignment(Qt.AlignmentFlag.AlignHCenter)
+            row_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
             row_layout.addWidget(widget)
             form_layout.addRow(label, widget)
 
         form_section.setLayout(form_layout)
-        form_section.setAlignment(Qt.AlignmentFlag.AlignHCenter)
-        layout.addWidget(form_section, alignment=Qt.AlignmentFlag.AlignHCenter)
+        form_section.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        layout.addWidget(form_section, alignment=Qt.AlignmentFlag.AlignLeft)
 
         # --- Submit Button ---
         submit_btn = QPushButton("✅ Submit Round Data")
         submit_btn.setFixedWidth(self.input_width)
+        layout.addWidget(submit_btn, alignment=Qt.AlignmentFlag.AlignLeft)
         submit_btn.clicked.connect(self.save_input_only)
-        layout.addWidget(submit_btn, alignment=Qt.AlignmentFlag.AlignHCenter)
 
         self.setLayout(layout)
 
@@ -155,5 +156,3 @@ class RoundInput(QWidget):
             QMessageBox.information(self, "Saved", "Round input data saved successfully.")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Invalid input: {e}")
-
-# Add this import at the top of your file:

@@ -16,33 +16,55 @@ class EditScoresTab(QWidget):
         self.team_dropdown.currentIndexChanged.connect(self.load_scores)
         self.score_list = QListWidget()
 
-
         self.delete_button = QPushButton("Delete Selected Score")
         self.delete_button.clicked.connect(self.delete_selected_score)
 
+        self.refresh_button = QPushButton("Refresh Data")
+        self.refresh_button.clicked.connect(self.refresh_data)
+
+        self.edit_button = QPushButton("Edit Selected Round Data")
+        self.edit_button.clicked.connect(self.edit_selected_score)
+
+        # Add widgets to layout
         self.layout.addWidget(QLabel("Category"))
         self.layout.addWidget(self.category_dropdown)
         self.layout.addWidget(QLabel("Team"))
         self.layout.addWidget(self.team_dropdown)
         self.layout.addWidget(QLabel("Scores"))
         self.layout.addWidget(self.score_list)
-
-        # Add refresh button
-        self.refresh_button = QPushButton("Refresh Data")
-        self.refresh_button.clicked.connect(self.refresh_data)
         self.layout.addWidget(self.refresh_button)
         self.layout.addWidget(self.delete_button)
-
-        self.edit_button = QPushButton("Edit Selected Round Data")
-        self.edit_button.clicked.connect(self.edit_selected_score)
         self.layout.addWidget(self.edit_button)
-
-
 
         self.setLayout(self.layout)
 
+        # Set fixed size policy for 1/3 width and 1/2 height
+        self.resizeEvent = self.on_resize
+        self.setMinimumSize(400, 300)  # fallback minimum
+
         self.teams = {}
         self.load_teams()
+
+    def on_resize(self, event):
+        parent = self.parentWidget()
+        if parent:
+            w = parent.width() // 3
+            h = parent.height() // 2
+            self.setFixedSize(w, h)
+            for widget in [
+                self.category_dropdown, self.team_dropdown, self.score_list,
+                self.delete_button, self.refresh_button, self.edit_button
+            ]:
+                widget.setFixedWidth(w)
+        else:
+            # fallback if no parent
+            w = self.width()
+            for widget in [
+                self.category_dropdown, self.team_dropdown, self.score_list,
+                self.delete_button, self.refresh_button, self.edit_button
+            ]:
+                widget.setFixedWidth(w)
+        super().resizeEvent(event)
 
     def load_teams(self):
         cat = self.category_dropdown.currentText()

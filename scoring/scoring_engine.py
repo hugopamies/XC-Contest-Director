@@ -50,9 +50,13 @@ def compute_round_score(data, category="Academic",
     if category == "Academic":
         altitude_score = 4.3636e-6 * (A60s ** 4) - 0.001215 * (A60s ** 3) + 0.095732 * (A60s ** 2) - 0.86741 * A60s
         altitude_score = math.ceil(altitude_score * 10) / 10
+        if altitude_score > 100:
+            altitude_score = 100
     elif category == "Clubs":
         altitude_score = 6.5455e-6 * (A60s ** 4) - 0.001822 * (A60s ** 3) + 0.1436 * (A60s ** 2) - 1.3011 * A60s
         altitude_score = math.ceil(altitude_score * 10) / 10
+        if altitude_score > 150:
+            altitude_score = 150
     else:
         altitude_score = 0
 
@@ -62,13 +66,18 @@ def compute_round_score(data, category="Academic",
         Bcarga = w["loading"] * (carga_eff / best_eff)
     else:
         Bcarga = 0
-
+        
+    Bdespegue = 1
+    
     # --- Multipliers ---
-    Bdespegue = 1.0
-    if takeoff_distance <= 20:
+    if takeoff_distance == 20:
         Bdespegue = 1.25
-    elif takeoff_distance <= 40:
+    elif takeoff_distance == 40:
         Bdespegue = 1.125
+    elif takeoff_distance == 60:
+        Bdespegue = 1.0
+    elif takeoff_distance == 0:
+        Bdespegue = 0
 
     #Spiloto = 1.0 #if internal_pilot else 0.75
     #Lvuelo = 1.0 #if legal_flight else 0.0
@@ -98,7 +107,7 @@ def compute_round_score(data, category="Academic",
 
     # --- Final Score ---
     base = Ppeso + Ptiempo + Pglide + altitude_score
-    total = ((base * Lvuelo * Laterrizaje + Bcarga) * Bdespegue) * Spiloto * Srepuestos
+    total = ((base * Lvuelo * Laterrizaje + Bcarga) * Bdespegue ) * Spiloto * Srepuestos
     return round(total, 2)
 
 def total_score(round_scores):

@@ -6,7 +6,11 @@ from PyQt6.QtCore import QTimer, Qt
 from utils.storage import load_results
 import json
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+import matplotlib.cm as cm
+import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from utils.storage import load_results, save_results
 
 class StatsDashboard(QWidget):
     def __init__(self):
@@ -59,7 +63,6 @@ class StatsDashboard(QWidget):
         nav_layout.addWidget(self.btn_show_2)
         nav_layout.addWidget(self.btn_show_3)
         nav_layout.addWidget(self.toggle_button)
-        nav_layout.addWidget(self.refresh_button)
         main_layout.addLayout(nav_layout)
 
         self.main_splitter = QSplitter(Qt.Orientation.Horizontal)
@@ -159,59 +162,128 @@ class StatsDashboard(QWidget):
         self.update_glide_chart()
         self.update_circuit_chart()
 
+
     def init_team_trends_chart(self):
         layout = QVBoxLayout()
+
         label = QLabel(" Team Performance Trends")
         label.setStyleSheet("font-size: 14px; font-weight: bold;")
         layout.addWidget(label)
+
         self.figure_trends, self.ax_trends = plt.subplots()
+        self.figure_trends.tight_layout()
+
         self.canvas_trends = FigureCanvas(self.figure_trends)
-        self.canvas_trends.setMinimumHeight(600)  # Ensure at least 600px tall
+        self.canvas_trends.setMinimumHeight(600)
+
+        # ✅ Add navigation toolbar for zoom/pan support
+        toolbar = NavigationToolbar(self.canvas_trends, self)
+        layout.addWidget(toolbar)
+
         layout.addWidget(self.canvas_trends)
 
         container = QWidget()
         container.setLayout(layout)
         self.left_splitter.addWidget(container)
 
-    def update_team_trends_chart(self):
-        self.ax_trends.clear()
-        for cat in ["Academic", "Clubs"]:
-            for team in self.teams[cat]:
-                tid = str(team["id"])
-                name = team["name"]
-                rounds = self.results.get(cat, {}).get(tid, [])
-                x, y = [], []
-                # Compute R0 as static_score - penalties
-                static_score = team.get("static_score", 0)
-                penalties = team.get("penalties", 0)
-                r0_score = static_score - penalties
-                x.append(0)
-                y.append(r0_score if isinstance(r0_score, (int, float)) else 0)
-                # Add other rounds
-                for i, entry in enumerate(rounds):
-                    score = entry.get("score") if isinstance(entry, dict) else entry
-                    if isinstance(score, (int, float)):
-                        x.append(i + 1)
-                        y.append(score)
-                if x:
-                    self.ax_trends.plot(x, y)
-                    self.ax_trends.text(x[-1], y[-1], name, fontsize=7)
 
-        self.ax_trends.set_title("Scores per Round", fontsize=11)
-        self.ax_trends.set_xlabel("Round", fontsize=10)
-        self.ax_trends.set_ylabel("Score", fontsize=10)
-        self.ax_trends.set_ylim(0, 1000)
-        self.ax_trends.set_xlim(-0.5, self.total_rounds + 0.5)
-        self.ax_trends.set_xticks([0] + list(range(1, self.total_rounds + 1)))
-        self.ax_trends.set_xticklabels(["R0"] + [f"R{i}" for i in range(1, self.total_rounds + 1)])
-        self.figure_trends.tight_layout()
+    def update_team_trends_chart(self):
+        self.ax_trends.clear()  # Clear previous plot
+
+        categories = ["Academic", "Clubs"]
+        linestyles = {"Academic": "solid", "Clubs": "dotted"}
+
+        # Generate distinct colors
+        num_teams = sum(len(self.teams[cat]) for cat in categories)
+        colormap = cm.get_cmap("tab20", num_teams)
+        color_idx = 0
+
+        for category in categories:
+            trends = self._compute_team_trends(category, self.teams, self.results)
+            for tid, data in trends.items():
+                x = data["x"]
+                y = data["y"]
+                name = data["team_name"]
+                linestyle = linestyles.get(category, "solid")
+                color = colormap(color_idx % num_teams)
+                color_idx += 1
+
+                self.ax_trends.plot(x, y, label=f"{name} ({category})",
+                                    color=color, linestyle=linestyle, alpha=0.8)
+                self.ax_trends.text(x[-1], y[-1], name, fontsize=7, color=color)
+
+        #self.ax_trends.set_title("Team Performance Trends")
+        self.ax_trends.set_xlabel("Rounds")
+        self.ax_trends.set_ylabel("Score")
+        self.ax_trends.set_xlim(0, 5)
+        self.ax_trends.set_xticks(range(5))  # Only integer ticks from 0 to 4
+        self.ax_trends.grid(True, linestyle='--', alpha=0.3)
         self.canvas_trends.draw()
+
+    def _compute_team_trends(self, category, teams, results):
+        # (copy your logic here, renamed from update_team_trends_chart)
+        static_scores = results.get("static_scores", {}).get(category, {})
+        penalties = results.get("penalties", {}).get(category, {})
+        penalty_reasons = results.get("penalty_reasons", {}).get(category, {})
+
+        all_scores = []
+        max_rounds = 0
+
+        for team in teams[category]:
+            tid = str(team["id"])
+            rounds = results.get(category, {}).get(tid, [])
+            all_scores.append((team, rounds))
+            if len(rounds) > max_rounds:
+                max_rounds = len(rounds)
+
+        trends = {}
+
+        for team, rounds in all_scores:
+            tid = str(team["id"])
+            name = team.get("name", "Unknown")
+
+            static_score = static_scores.get(tid, 250 if category == "Academic" else 0)
+            penalty = penalties.get(tid, 0)
+
+            r0_score = static_score - penalty
+
+            round_scores = []
+            for entry in rounds:
+                score = entry.get("score") if isinstance(entry, dict) else entry
+                if isinstance(score, (int, float)):
+                    round_scores.append(score)
+
+            x = [0]
+            y = [r0_score]
+
+            for i in range(len(round_scores)):
+                elapsed_scores = round_scores[: i + 1]
+
+                if i < 3:
+                    avg_score = sum(elapsed_scores) / len(elapsed_scores)
+                else:
+                    best_3_scores = sorted(elapsed_scores, reverse=True)[:3]
+                    avg_score = sum(best_3_scores) / 3
+
+                total_score = r0_score + avg_score
+                x.append(i + 1)
+                y.append(total_score)
+
+            trends[tid] = {
+                "team_name": name,
+                "x": x,
+                "y": y,
+                "penalty_reasons": penalty_reasons.get(tid, [])
+            }
+
+        return trends
+
 
     def init_best_metrics_tables(self):
         # Place the two tables side by side using QHBoxLayout
         layout = QHBoxLayout()
 
-        self.table_academic = self.create_metrics_table(" Academic Top Performers")
+        self.table_academic = self.create_metrics_table("Academic Top Performers")
         self.table_clubs = self.create_metrics_table(" Clubs Top Performers")
 
         layout.addWidget(self.table_academic["container"])
@@ -227,7 +299,7 @@ class StatsDashboard(QWidget):
         table = QTableWidget()
         table.setStyleSheet("font-size: 11px;")
         table.setColumnCount(5)
-        table.setHorizontalHeaderLabels(["Rank", "Top Payloads", "Top Circuit Times", "Top Gliding Times", "Top Loading Times"])
+        table.setHorizontalHeaderLabels(["Rank", "PL [ml]", "Circuit [s]", "Gliding [s]", "Loading [s]"])
         layout = QVBoxLayout()
         layout.addWidget(label)
         layout.addWidget(table)
@@ -237,9 +309,16 @@ class StatsDashboard(QWidget):
 
     def update_best_metrics_tables(self):
         r = self.round_index
-        limits = {"Academic": 10, "Clubs": 3}
+        limits = {"Academic": 3, "Clubs": 3}
 
-        for cat, table in [("Academic", self.table_academic["table"]), ("Clubs", self.table_clubs["table"])]:
+        for cat, table_info in [("Academic", self.table_academic), ("Clubs", self.table_clubs)]:
+            table = table_info["table"]
+            container = table_info["container"]
+            label = container.findChild(QLabel)
+
+            if label:
+                label.setText(f"{cat} Top Performers - Round {r + 1}")
+
             stats = []
             for team in self.teams[cat]:
                 tid = str(team["id"])
@@ -281,41 +360,53 @@ class StatsDashboard(QWidget):
 
     def init_glide_chart(self):
         layout = QVBoxLayout()
-        label = QLabel(" Glide Time Distribution")
-        label.setStyleSheet("font-size: 14px; font-weight: bold;")
-        layout.addWidget(label)
+        self.label_glide_title = QLabel(" Glide Time Distribution")
+        self.label_glide_title.setStyleSheet("font-size: 14px; font-weight: bold;")
+        layout.addWidget(self.label_glide_title)
+
         self.fig_glide, self.ax_glide = plt.subplots()
         self.canvas_glide = FigureCanvas(self.fig_glide)
         layout.addWidget(self.canvas_glide)
+
         container = QWidget()
         container.setLayout(layout)
         self.right_splitter.addWidget(container)
 
+
     def update_glide_chart(self):
+        self.label_glide_title.setText(f"Glide Time Distribution - Round {self.round_index + 1}")
         self.ax_glide.clear()
+
         for cat, color in zip(["Academic", "Clubs"], ["#B50220", "#4B0017"]):
-            names, values = [], []
+            data = []
             for team in self.teams[cat]:
                 tid = str(team["id"])
                 name = team["name"]
                 rounds = self.results.get(cat, {}).get(tid, [])
                 if self.round_index < len(rounds):
                     inputs = rounds[self.round_index].get("inputs", {})
-                    names.append(name)
-                    values.append(inputs.get("Time Glide", 0))
-            self.ax_glide.bar(names, values, label=cat, alpha=0.7)
-        self.ax_glide.set_title(f"Glide Time - Round {self.round_index + 1}", fontsize=11)
+                    glide_time = inputs.get("Time Glide", 0)
+                    data.append((name, glide_time))
+
+            # Sort from highest to lowest glide time
+            data.sort(key=lambda x: x[1], reverse=True)
+            names, values = zip(*data) if data else ([], [])
+
+            self.ax_glide.bar(names, values, label=cat, alpha=0.7, color=color)
+
+        #self.ax_glide.set_title(f"Glide Time - Round {self.round_index + 1}", fontsize=11)
         self.ax_glide.set_ylabel("Seconds", fontsize=10)
         self.ax_glide.tick_params(axis='x', labelrotation=45, labelsize=7)
         self.ax_glide.legend()
         self.fig_glide.tight_layout()
         self.canvas_glide.draw()
 
+
     def init_circuit_chart(self):
         layout = QVBoxLayout()
-        label = QLabel(" Circuit Speed Distribution")
-        label.setStyleSheet("font-size: 14px; font-weight: bold;")
-        layout.addWidget(label)
+        self.label_circuit_title = QLabel("Circuit Speed Distribution")
+        self.label_circuit_title.setStyleSheet("font-size: 14px; font-weight: bold;")
+        layout.addWidget(self.label_circuit_title)
         self.fig_circuit, self.ax_circuit = plt.subplots()
         self.canvas_circuit = FigureCanvas(self.fig_circuit)
         layout.addWidget(self.canvas_circuit)
@@ -323,10 +414,13 @@ class StatsDashboard(QWidget):
         container.setLayout(layout)
         self.right_splitter.addWidget(container)
 
+
     def update_circuit_chart(self):
+        self.label_circuit_title.setText(f"Circuit Speed Distribution - Round {self.round_index + 1}")
         self.ax_circuit.clear()
-        for cat, color in zip(["Academic", "Clubs"], ["#B50220", "#4B0017"]):
-            names, speeds = [], []
+
+        for cat, color in zip(["Academic", "Clubs"], ["#63CC6C", "#395A31"]):
+            data = []
             for team in self.teams[cat]:
                 tid = str(team["id"])
                 name = team["name"]
@@ -335,10 +429,15 @@ class StatsDashboard(QWidget):
                     inputs = rounds[self.round_index].get("inputs", {})
                     time = inputs.get("Time Circuit", 0)
                     speed = 1000 * 3.6 / time if time > 0 else 0
-                    names.append(name)
-                    speeds.append(speed)
-            self.ax_circuit.bar(names, speeds, label=cat, alpha=0.7)
-        self.ax_circuit.set_title(f"Circuit Speed - Round {self.round_index + 1}", fontsize=11)
+                    data.append((name, speed))
+
+            # Sort from highest to lowest speed
+            data.sort(key=lambda x: x[1], reverse=True)
+            names, speeds = zip(*data) if data else ([], [])
+
+            self.ax_circuit.bar(names, speeds, label=cat, alpha=0.7, color=color)
+
+        #self.ax_circuit.set_title(f"Circuit Speed - Round {self.round_index + 1}", fontsize=11)
         self.ax_circuit.set_ylabel("km/h", fontsize=10)
         self.ax_circuit.tick_params(axis='x', labelrotation=45, labelsize=7)
         self.ax_circuit.legend()

@@ -1,14 +1,14 @@
 {
   "Academic": [
     {"id": 1, "name": "Saka TUDa", "organization": "Technische Universität Darmstadt"},
-    {"id": 2, "name": "UVigo Aerotech AINE", "organization": "Universidad de Vigo"},
+    {"id": 2, "name": "UVigo Aerotech ÁINE", "organization": "Universidad de Vigo"},
     {"id": 3, "name": "UCA&AIR", "organization": "Universidad de Cádiz"},
     {"id": 4, "name": "EOLO", "organization": "Universitat Politècnica de València"},
     {"id": 5, "name": "Diana", "organization": "Universidad de Castilla la Mancha"},
     {"id": 6, "name": "ARTEMIS", "organization": "Universitat Politècnica de València"},
     {"id": 7, "name": "S7EAM", "organization": "Universitat Politècnica de València"},
     {"id": 8, "name": "Navy Hawks", "organization": "Universitat Politècnica de València"},
-    {"id": 9, "name": "Trencalos", "organization": "ESEIAAT - Universitat Politècnica de Catalunya"},
+    {"id": 9, "name": "Trencalòs", "organization": "Universitat Politècnica de Catalunya"},
     {"id": 10, "name": "Kondor Aero", "organization": "Universitat Politècnica de València"},
     {"id": 11, "name": "VANTUS #1", "organization": "Universidad de Sevilla"},
     {"id": 12, "name": "ECLift", "organization": "École Centrale de Lyon"},

@@ -16,7 +16,7 @@
           "Takeoff Distance": 20.0
         },
         "round": 0,
-        "score": 626.59
+        "score": 599.1
       },
       {
         "inputs": {
@@ -37,25 +37,25 @@
       },
       {
         "inputs": {
-          "Requested Payload": 1.2,
-          "Unloaded Payload": 1.15,
-          "Time Circuit": 60.0,
-          "Time Glide": 60.0,
-          "Altitude": 60.0,
-          "Loading Time": 60.0,
+          "Requested Payload": 4.0,
+          "Unloaded Payload": false,
+          "Time Circuit": 1e+99,
+          "Time Glide": false,
+          "Altitude": false,
+          "Loading Time": 1e+99,
           "Pilot": true,
-          "Legal Flight": true,
+          "Legal Flight": false,
           "Good Landing": true,
           "Replacement Parts": true,
-          "Takeoff Distance": 20
+          "Takeoff Distance": 20.0
         },
         "round": 2,
-        "score": 535.81
+        "score": 0.0
       }
     ],
     "2": [
       {
-        "score": 239.59,
+        "score": 233.14,
         "inputs": {
           "Requested Payload": 3.0,
           "Unloaded Payload": 1.0,
@@ -89,7 +89,7 @@
         "round": 1
       },
       {
-        "score": 579.17,
+        "score": 520.5,
         "inputs": {
           "Requested Payload": 3.0,
           "Unloaded Payload": 2.0,
@@ -106,7 +106,25 @@
         "round": 2
       }
     ],
-    "7": [],
+    "7": [
+      {
+        "inputs": {
+          "Requested Payload": 3.0,
+          "Unloaded Payload": 1.0,
+          "Time Circuit": 60.0,
+          "Time Glide": 80.0,
+          "Altitude": 20.0,
+          "Loading Time": 60.0,
+          "Pilot": true,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 40
+        },
+        "round": 0,
+        "score": 279.32
+      }
+    ],
     "3": [
       {
         "inputs": {
@@ -122,7 +140,7 @@
           "Replacement Parts": true,
           "Takeoff Distance": 40.0
         },
-        "score": 418.68,
+        "score": 406.39,
         "round": 0
       },
       {
@@ -141,11 +159,28 @@
         },
         "score": 233.7,
         "round": 1
+      },
+      {
+        "inputs": {
+          "Requested Payload": 3.0,
+          "Unloaded Payload": 3.0,
+          "Time Circuit": 1e+99,
+          "Time Glide": 9.0,
+          "Altitude": 72.0,
+          "Loading Time": 13.0,
+          "Pilot": true,
+          "Legal Flight": false,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 60.0
+        },
+        "round": 2,
+        "score": 87.71
       }
     ],
     "4": [
       {
-        "score": 370.89,
+        "score": 359.48,
         "inputs": {
           "Requested Payload": 1.0,
           "Unloaded Payload": 0.9,
@@ -164,7 +199,7 @@
     ],
     "5": [
       {
-        "score": 182.13,
+        "score": 175.97,
         "inputs": {
           "Requested Payload": 3.0,
           "Unloaded Payload": 1.0,
@@ -211,7 +246,7 @@
           "Replacement Parts": true,
           "Takeoff Distance": 40.0
         },
-        "score": 339.28,
+        "score": 320.91,
         "round": 2
       }
     ],
@@ -231,14 +266,109 @@
           "Takeoff Distance": 20
         },
         "round": 0,
-        "score": 686.16
+        "score": 657.18
+      }
+    ],
+    "8": [
+      {
+        "inputs": {
+          "Requested Payload": 3.0,
+          "Unloaded Payload": 2.0,
+          "Time Circuit": 60.0,
+          "Time Glide": 80.0,
+          "Altitude": 20.0,
+          "Loading Time": 60.0,
+          "Pilot": true,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 40
+        },
+        "round": 0,
+        "score": 376.9
+      }
+    ],
+    "9": [
+      {
+        "inputs": {
+          "Requested Payload": 2.0,
+          "Unloaded Payload": 2.0,
+          "Time Circuit": 60.0,
+          "Time Glide": 80.0,
+          "Altitude": 20.0,
+          "Loading Time": 20.0,
+          "Pilot": true,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 40
+        },
+        "round": 0,
+        "score": 458.6
+      }
+    ],
+    "10": [
+      {
+        "inputs": {
+          "Requested Payload": 2.2,
+          "Unloaded Payload": 2.0,
+          "Time Circuit": 53.0,
+          "Time Glide": 75.0,
+          "Altitude": 75.0,
+          "Loading Time": 16.0,
+          "Pilot": true,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 40
+        },
+        "round": 0,
+        "score": 558.15
+      }
+    ],
+    "11": [
+      {
+        "inputs": {
+          "Requested Payload": 2.2,
+          "Unloaded Payload": 2.2,
+          "Time Circuit": 53.0,
+          "Time Glide": 75.0,
+          "Altitude": 75.0,
+          "Loading Time": 16.0,
+          "Pilot": true,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 20
+        },
+        "round": 0,
+        "score": 661.69
+      }
+    ],
+    "12": [
+      {
+        "inputs": {
+          "Requested Payload": 0.6,
+          "Unloaded Payload": 0.3,
+          "Time Circuit": 50.0,
+          "Time Glide": 46.0,
+          "Altitude": 46.0,
+          "Loading Time": 97.0,
+          "Pilot": false,
+          "Legal Flight": true,
+          "Good Landing": true,
+          "Replacement Parts": true,
+          "Takeoff Distance": 40
+        },
+        "round": 0,
+        "score": 211.03
       }
     ]
   },
   "Clubs": {
     "17": [
       {
-        "score": 1000.25,
+        "score": 1000.0,
         "inputs": {
           "Requested Payload": 1.0,
           "Unloaded Payload": 1.0,
@@ -258,19 +388,19 @@
   },
   "static_scores": {
     "Academic": {
-      "1": 230.0,
-      "2": 100.0,
+      "1": 200.0,
+      "2": 200.0,
       "3": 200.0,
       "4": 200.0,
-      "5": 250.0,
+      "5": 200.0,
       "6": 250.0,
       "7": 250.0,
       "8": 250.0,
       "9": 250.0,
       "10": 250.0,
       "11": 250.0,
-      "12": 250.0,
-      "13": 250.0,
+      "12": 200.0,
+      "13": 99.0,
       "14": 250.0,
       "15": 250.0
     }
@@ -284,12 +414,12 @@
       "5": 0.0,
       "6": 0.0,
       "7": 0.0,
-      "8": 25.0,
+      "8": 0.0,
       "9": 0.0,
       "10": 0.0,
       "11": 0.0,
       "12": 0.0,
-      "13": 5.0,
+      "13": 0.0,
       "14": 0.0,
       "15": 0.0
     }
@@ -308,7 +438,7 @@
       "10": "",
       "11": "",
       "12": "",
-      "13": "Deviation of more than 1cm",
+      "13": "",
       "14": "",
       "15": ""
     }

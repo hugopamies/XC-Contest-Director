@@ -6,11 +6,13 @@ from scoring.scoring_engine import total_score, compute_round_score, get_best_va
 from utils.pdf_exporter import export_rankings_to_pdf
 from utils.xlsx_exporter import export_all_data_to_excel
 from PyQt6.QtWidgets import QCheckBox, QHBoxLayout, QWidget as QtWidget
+from PyQt6.QtGui import QFont
 
 class NumericTableWidgetItem(QTableWidgetItem):
     def __init__(self, text, number):
         super().__init__(text)
         self.number = number
+        self.setFont(QFont("Arial", 12))
 
     def __lt__(self, other):
         if isinstance(other, NumericTableWidgetItem):
@@ -22,6 +24,7 @@ class TeamRankingsTab(QWidget):
     def __init__(self):
         super().__init__()
         self.tabs = QTabWidget()
+        self.tabs.setFont(QFont("Arial", 12))
 
         self.tabs.addTab(self.create_ranking_tab("Academic"), "Academic Rankings")
         self.tabs.addTab(self.create_ranking_tab("Clubs"), "Clubs Rankings")
@@ -29,17 +32,13 @@ class TeamRankingsTab(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.tabs)
 
-        export_pdf_btn = QPushButton("🖨️ Export to PDF")
-        export_pdf_btn.clicked.connect(self.export_pdf)
-        export_pdf_btn.setSizePolicy(export_pdf_btn.sizePolicy().horizontalPolicy(), export_pdf_btn.sizePolicy().verticalPolicy())
-        export_pdf_btn.setMaximumWidth(export_pdf_btn.fontMetrics().horizontalAdvance(export_pdf_btn.text()) + 32)
 
-        export_excel_btn = QPushButton("🧾 Export to Excel")
+        export_excel_btn = QPushButton("Export Scores to Excel")
         export_excel_btn.clicked.connect(self.export_excel)
+        export_excel_btn.setFont(QFont("Arial", 12))
         export_excel_btn.setSizePolicy(export_excel_btn.sizePolicy().horizontalPolicy(), export_excel_btn.sizePolicy().verticalPolicy())
         export_excel_btn.setMaximumWidth(export_excel_btn.fontMetrics().horizontalAdvance(export_excel_btn.text()) + 32)
 
-        layout.addWidget(export_pdf_btn)
         layout.addWidget(export_excel_btn)
 
         self.setLayout(layout)
@@ -50,7 +49,8 @@ class TeamRankingsTab(QWidget):
         layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         table = QTableWidget()
-        table.setStyleSheet("font-size: 18px;")
+        table.setStyleSheet("font-size: 12px; font-family: Arial;")
+        table.setFont(QFont("Arial", 12))
         table.setObjectName("rankingsTable")
 
         # Remove row labels
@@ -131,6 +131,17 @@ class TeamRankingsTab(QWidget):
         table.setSortingEnabled(True)
         table.setRowCount(len(all_scores))
 
+        # Set header font: Bold Arial 13
+        header = table.horizontalHeader()
+        header_font = QFont("Arial", 13)
+        header_font.setBold(True)
+        header.setFont(header_font)
+
+        for col in range(table.columnCount()):
+            item = table.horizontalHeaderItem(col)
+            if item:
+                item.setFont(header_font)
+
         for row, (team, rounds) in enumerate(all_scores):
             tid = str(team["id"])
             name = team["name"]
@@ -176,41 +187,54 @@ class TeamRankingsTab(QWidget):
             # Rank column (bold)
             rank = tid_to_rank.get(tid, "")
             rank_item = NumericTableWidgetItem(str(rank), rank if isinstance(rank, int) else 0)
-            font = rank_item.font()
+            font = QFont("Arial", 12)
             font.setBold(True)
             rank_item.setFont(font)
             table.setItem(row, 0, rank_item)
 
             # Team ID column with "#"
             item_id = NumericTableWidgetItem(f"#{tid}", int(tid))
+            item_id.setFont(QFont("Arial", 12))
             table.setItem(row, 1, item_id)
             table.setItem(row, 2, QTableWidgetItem(str(name)))
+            table.item(row, 2).setFont(QFont("Arial", 12))
             table.setItem(row, 3, QTableWidgetItem(str(organization)))
+            table.item(row, 3).setFont(QFont("Arial", 12))
 
             col = 4
             if category == "Academic":
-                table.setItem(row, col, NumericTableWidgetItem(str(static_score), static_score))
+                static_item = NumericTableWidgetItem(str(static_score), static_score)
+                static_item.setFont(QFont("Arial", 12))
+                table.setItem(row, col, static_item)
                 col += 1
-            table.setItem(row, col, NumericTableWidgetItem(str(penalty), penalty))
+            penalty_item = NumericTableWidgetItem(str(penalty), penalty)
+            penalty_item.setFont(QFont("Arial", 12))
+            table.setItem(row, col, penalty_item)
             col += 1
 
             # R0 column (static - penalty)
-            table.setItem(row, col, NumericTableWidgetItem(str(round(r0_score, 2)), r0_score))
+            r0_item = NumericTableWidgetItem(str(round(r0_score, 2)), r0_score)
+            r0_item.setFont(QFont("Arial", 12))
+            table.setItem(row, col, r0_item)
             col += 1
 
             # Round columns (R1, R2, ...)
             for i, score in enumerate(recalculated_scores):
-                table.setItem(row, col + i, QTableWidgetItem(str(round(score, 2))))
+                round_item = QTableWidgetItem(str(round(score, 2)))
+                round_item.setFont(QFont("Arial", 12))
+                table.setItem(row, col + i, round_item)
             # Fill empty rounds with blank
             for i in range(len(recalculated_scores), max_rounds):
-                table.setItem(row, col + i, QTableWidgetItem(""))
+                empty_item = QTableWidgetItem("")
+                empty_item.setFont(QFont("Arial", 12))
+                table.setItem(row, col + i, empty_item)
             col += max_rounds
 
             # Total columns for each round (exclude R0 in totals)
             for i in range(max_rounds):
                 partial_total = total_score(recalculated_scores[:i+1]) + static_score - penalty
                 item_total = NumericTableWidgetItem(str(round(partial_total, 2)), partial_total)
-                total_font = item_total.font()
+                total_font = QFont("Arial", 12)
                 total_font.setBold(True)
                 item_total.setFont(total_font)
                 if i == max_rounds - 1:
@@ -219,13 +243,17 @@ class TeamRankingsTab(QWidget):
             col += max_rounds
 
             # Reason for Penalties column (last)
-            table.setItem(row, col, QTableWidgetItem(str(penalty_reason)))
+            reason_item = QTableWidgetItem(str(penalty_reason))
+            reason_item.setFont(QFont("Arial", 12))
+            table.setItem(row, col, reason_item)
 
         save_results(results)
 
         table.resizeColumnsToContents()
 
-        layout.addWidget(QLabel(f"{category.capitalize()} Team Rankings"))
+        label = QLabel(f"{category.capitalize()} Team Rankings")
+        label.setFont(QFont("Arial", 12))
+        layout.addWidget(label)
         layout.addWidget(table)
 
         # Add column visibility controls
@@ -243,6 +271,7 @@ class TeamRankingsTab(QWidget):
 
         for idx, header in enumerate(headers):
             cb = QCheckBox(header)
+            cb.setFont(QFont("Arial", 12))
             cb.setChecked(True)
             cb.stateChanged.connect(make_toggle_handler(idx))
             column_checkboxes.append(cb)
@@ -250,19 +279,22 @@ class TeamRankingsTab(QWidget):
         column_control_widget.setLayout(column_control_hbox)
         layout.addWidget(column_control_widget)
 
-        refresh_btn = QPushButton("🔄 Refresh Rankings")
+        refresh_btn = QPushButton("🔄 Refresh")
         refresh_btn.clicked.connect(lambda: self.rebuild_tab(category, widget))
+        refresh_btn.setFont(QFont("Arial", 12))
         refresh_btn.setMaximumWidth(refresh_btn.fontMetrics().horizontalAdvance(refresh_btn.text()) + 32)
         layout.addWidget(refresh_btn)
 
         if category == "Academic":
             edit_static_btn = QPushButton("🛠️ Edit Static Scores")
             edit_static_btn.clicked.connect(self.edit_static_scores)
+            edit_static_btn.setFont(QFont("Arial", 12))
             edit_static_btn.setMaximumWidth(edit_static_btn.fontMetrics().horizontalAdvance(edit_static_btn.text()) + 32)
             layout.addWidget(edit_static_btn)
 
-            edit_penalty_btn = QPushButton("⚖️ Edit Penalties & Reasons")
+            edit_penalty_btn = QPushButton("⚖️ Edit Penalties")
             edit_penalty_btn.clicked.connect(self.edit_penalties_and_reasons)
+            edit_penalty_btn.setFont(QFont("Arial", 12))
             edit_penalty_btn.setMaximumWidth(edit_penalty_btn.fontMetrics().horizontalAdvance(edit_penalty_btn.text()) + 32)
             layout.addWidget(edit_penalty_btn)
 
@@ -276,6 +308,7 @@ class TeamRankingsTab(QWidget):
 
         layout = QVBoxLayout(dialog)
         table = QTableWidget()
+        table.setFont(QFont("Arial", 12))
         # Remove row labels
         table.verticalHeader().setVisible(False)
 
@@ -289,17 +322,29 @@ class TeamRankingsTab(QWidget):
         table.setRowCount(len(academic_teams))
         table.setColumnCount(2)
         table.setHorizontalHeaderLabels(["Team Name", "Static Score"])
+        # Header font: Bold Arial 13
+        header_font = QFont("Arial", 13)
+        header_font.setBold(True)
+        table.horizontalHeader().setFont(header_font)
+        for col in range(table.columnCount()):
+            item = table.horizontalHeaderItem(col)
+            if item:
+                item.setFont(header_font)
 
         for row, team in enumerate(academic_teams):
             name = team["name"]
             tid = str(team["id"])
-            table.setItem(row, 0, QTableWidgetItem(str(name)))
+            name_item = QTableWidgetItem(str(name))
+            name_item.setFont(QFont("Arial", 12))
+            table.setItem(row, 0, name_item)
             score_item = QTableWidgetItem(str(static_scores.get(tid, 250)))
+            score_item.setFont(QFont("Arial", 12))
             table.setItem(row, 1, score_item)
 
         layout.addWidget(table)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.setFont(QFont("Arial", 12))
         layout.addWidget(buttons)
 
         buttons.accepted.connect(lambda: self.save_static_scores(table, teams["Academic"], dialog))
@@ -313,6 +358,7 @@ class TeamRankingsTab(QWidget):
 
         layout = QVBoxLayout(dialog)
         table = QTableWidget()
+        table.setFont(QFont("Arial", 12))
         table.verticalHeader().setVisible(False)
 
         with open("data/teams.json", "r", encoding="utf-8") as f:
@@ -326,19 +372,32 @@ class TeamRankingsTab(QWidget):
         table.setRowCount(len(academic_teams))
         table.setColumnCount(3)
         table.setHorizontalHeaderLabels(["Team Name", "Penalties", "Reason for Penalties"])
+        # Header font: Bold Arial 13
+        header_font = QFont("Arial", 13)
+        header_font.setBold(True)
+        table.horizontalHeader().setFont(header_font)
+        for col in range(table.columnCount()):
+            item = table.horizontalHeaderItem(col)
+            if item:
+                item.setFont(header_font)
 
         for row, team in enumerate(academic_teams):
             name = team["name"]
             tid = str(team["id"])
-            table.setItem(row, 0, QTableWidgetItem(str(name)))
+            name_item = QTableWidgetItem(str(name))
+            name_item.setFont(QFont("Arial", 12))
+            table.setItem(row, 0, name_item)
             penalty_item = QTableWidgetItem(str(penalties.get(tid, 0)))
+            penalty_item.setFont(QFont("Arial", 12))
             table.setItem(row, 1, penalty_item)
             reason_item = QTableWidgetItem(str(penalty_reasons.get(tid, "")))
+            reason_item.setFont(QFont("Arial", 12))
             table.setItem(row, 2, reason_item)
 
         layout.addWidget(table)
 
         buttons = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
+        buttons.setFont(QFont("Arial", 12))
         layout.addWidget(buttons)
 
         buttons.accepted.connect(lambda: self.save_penalties_and_reasons(table, teams["Academic"], dialog))
@@ -384,11 +443,29 @@ class TeamRankingsTab(QWidget):
     def export_pdf(self):
         filename, _ = QFileDialog.getSaveFileName(self, "Save PDF", "rankings.pdf", "PDF Files (*.pdf)")
         if filename:
-            export_rankings_to_pdf(filename)
+            rankings_data = self.get_all_rankings_data()
+            export_rankings_to_pdf(filename, rankings_data)
             QMessageBox.information(self, "Export Complete", f"Exported to {filename}")
 
     def export_excel(self):
-        filename, _ = QFileDialog.getSaveFileName(self, "Save Excel", "uav_results.xlsx", "Excel Files (*.xlsx)")
+        filename, _ = QFileDialog.getSaveFileName(self, "Save Excel", "XC_results.xlsx", "Excel Files (*.xlsx)")
         if filename:
-            export_all_data_to_excel(filename)
+            rankings_data = self.get_all_rankings_data()
+            export_all_data_to_excel(filename, rankings_data)
             QMessageBox.information(self, "Export Complete", f"Exported to {filename}")
+
+    def get_all_rankings_data(self):
+        rankings_data = {}
+        for i in range(self.tabs.count()):
+            category = "Academic" if i == 0 else "Clubs"
+            table = self.tabs.widget(i).findChild(QTableWidget, "rankingsTable")
+            headers = [table.horizontalHeaderItem(j).text() for j in range(table.columnCount())]
+            rows = []
+            for row in range(table.rowCount()):
+                row_data = {}
+                for col in range(table.columnCount()):
+                    item = table.item(row, col)
+                    row_data[headers[col]] = item.text() if item else ""
+                rows.append(row_data)
+            rankings_data[category] = rows
+        return rankings_data
